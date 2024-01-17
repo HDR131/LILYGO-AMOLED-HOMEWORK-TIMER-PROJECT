@@ -10,11 +10,10 @@
 #include "tomato_img.h"
 #include "tomato_Large_img.h"
 #include "stopwatch_img.h"
+#include "break_img.h"
+#include "zzz_img.h"
 
 using namespace std;
-
-#define RAND_MAX = 2;
-
 
 ////////////////////////////// TFT & amoled Initalizations //////////////////////////////
 TFT_eSPI tft = TFT_eSPI();
@@ -22,13 +21,17 @@ TFT_eSprite spr = TFT_eSprite(&tft);
 TFT_eSprite tmtsml = TFT_eSprite(&tft);
 TFT_eSprite tmtlrg = TFT_eSprite(&tft);
 TFT_eSprite stpwtch = TFT_eSprite(&tft);
+TFT_eSprite brklrg = TFT_eSprite(&tft);
+TFT_eSprite zzzsml = TFT_eSprite(&tft);
 
 #define color1 0xDA65 // dark orange color 
 #define color2 0xDB29 // light orange color 
 #define color3 0xFFDD // off white 
 #define color4 0x0841 // black
 #define color5 0xB182 // dark orange color 
-#define color6 0x2173 // dark blue-violet color 
+#define color6 0x52F7 // blue-violet color 
+#define color7 0x4A94 // dark blue-violet color 
+#define color8 0x73DA // bright blue-violet color
 
 LilyGo_Class amoled;
 
@@ -184,6 +187,7 @@ void DrawTimerWork() {
     // create timer outline round rectangles 
     spr.fillRoundRect(85, 85, 310, 135, 25, color3);
     spr.fillRoundRect(90, 90, 300, 125, 18, color2);
+
     // convert second and minute values 
     int s = seconds % 60;
     int m = (seconds % 3600) / 60;
@@ -218,11 +222,11 @@ void DrawTimerWork() {
     // Push stopwatch sprite to &spr 
     stpwtch.pushToSprite(&spr, 10, 120, TFT_BLACK);
 
-    // push the all drawn sprite to the screen
+    // push the all drawn sprites to the screen
     amoled.pushColors(0, 0, WIDTH, HEIGHT, (uint16_t *)spr.getPointer());
   }
 
-  timerStop(Timer0);
+  timerAlarmDisable(Timer0);
 
 }
 
@@ -230,22 +234,84 @@ void DrawTimerWork() {
 
 void DrawTimer5Break() {
 
-// redefine starting seconds varibale for countdown 
-seconds = 5 * 60;
+  // redefine starting seconds varibale for countdown 
+  seconds = 5 * 60;
 
-// Begin Timers 
-Timer_INIT();
+  // create stopwatch sprite 
+  stpwtch.createSprite(64,64);
+  stpwtch.setSwapBytes(true);
+  stpwtch.pushImage(0, 0, 64, 64, stopwatch_img);
 
-// 5 Min Break Period countdown timer loop 
-while (seconds >= 0) {
+  // create large break image sprite 
+  brklrg.createSprite(128,128);
+  brklrg.setSwapBytes(false);
+  brklrg.pushImage(0, 0, 128, 128, break_img);
 
-// Draw background 
-spr.fillRect(0, 0, WIDTH, HEIGHT, color6);
+  // create zzz image sprite 
+  zzzsml.createSprite(32, 32);
+  zzzsml.setSwapBytes(false);
+  zzzsml.pushImage(0, 0, 32, 32, zzz_img);
 
 
-}
+  // Begin Timers 
+  Timer_INIT();
 
+  // 5 Min Break Period countdown timer loop 
+  while (seconds >= 0) {
 
+    // Draw background 
+    spr.fillRect(0, 0, WIDTH, HEIGHT, color6);
+    spr.fillCircle(20, 100, 95, color7);
+    spr.fillCircle(340, 190, 150, color8);
+
+    // create the break period lable string/sprite
+    spr.setTextColor(color3);
+    String wrktxt = "...Break Period...";
+    spr.drawString(wrktxt, 200, 25, 4);
+
+    // create timer outline round rectangles 
+    spr.fillRoundRect(85, 85, 310, 135, 25, color3);
+    spr.fillRoundRect(90, 90, 300, 125, 18, color7);
+
+    // convert second and minute values 
+    int s = seconds % 60;
+    int m = (seconds % 3600) / 60;
+    int s_size = std::to_string(s).length();
+
+    // create timer number string for minutes 
+    String m_str = String(m);
+    // if statment to keep alignment if single digit minutes 
+    if (m_str.length() == 1) {
+      m_str = "0" + m_str; 
+    }
+    // create timer number string for seconds 
+    String s_str = String(s); 
+    // if statment to keep alignment if single digits seconds 
+    if (s_str.length() == 1) {
+      s_str = "0" + s_str;
+    }
+    // create total time string 
+    String currTime = m_str + ":" + s_str; 
+    spr.setTextColor(color3, color7);
+    spr.drawString(currTime, 115, 110, 8);
+
+    // Push stopwatch sprite to &spr 
+    stpwtch.pushToSprite(&spr, 10, 120, TFT_BLACK);
+
+    // Push large break sprite to &spr
+    brklrg.pushToSprite(&spr, 400, img_pos1, TFT_BLACK);
+
+    // push zzz sprite left of "Break Period" to the sprite class &spr 
+    zzzsml.pushToSprite(&spr, 165, img_pos2, TFT_BLACK);
+
+    // push zzz sprite right of "Break Period" to &spr
+    zzzsml.pushToSprite(&spr, 390, img_pos3, TFT_BLACK);
+
+    // push all drawn sprites to the screen
+    amoled.pushColors(0, 0, WIDTH, HEIGHT, (uint16_t *)spr.getPointer());
+  }
+
+  timerAlarmDisable(Timer0);
 }
 
 
