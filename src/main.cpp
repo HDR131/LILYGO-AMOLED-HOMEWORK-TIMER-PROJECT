@@ -24,11 +24,11 @@ TFT_eSprite tmtlrg = TFT_eSprite(&tft);
 TFT_eSprite stpwtch = TFT_eSprite(&tft);
 
 #define color1 0xDA65 // dark orange color 
-//#define color2 0xD3AB // light orange color 
 #define color2 0xDB29 // light orange color 
-#define color3 0xFFDD // white 
+#define color3 0xFFDD // off white 
 #define color4 0x0841 // black
 #define color5 0xB182 // dark orange color 
+#define color6 0x2173 // dark blue-violet color 
 
 LilyGo_Class amoled;
 
@@ -92,6 +92,7 @@ void IRAM_ATTR timer1Interrupt() {
     }
   }
 
+  // move tomato left of Work Period, operates the same as above function 
   if (tmt1flag == false) {
     img_pos2--;
     if (img_pos2 < 10) {
@@ -105,6 +106,7 @@ void IRAM_ATTR timer1Interrupt() {
     }
   }
 
+    // move rtomato right of Work Period, operates the same as above fucntion 
     if (tmt2flag == false) {
     img_pos3--;;
     if (img_pos3 < 10) {
@@ -142,60 +144,81 @@ void Timer_INIT() {
   timerAlarmEnable(Timer1);
 }
 
-//////////////////////////// Work Timer Scrren Function ////////////////////////////
-void drawTimerWork() {
+//////////////////////////// Work Timer Screen Function ////////////////////////////
+void DrawTimerWork() {
 
+  // create the small tomato sprite 
   tmtsml.createSprite(32,32);
   tmtsml.setSwapBytes(false);
   tmtsml.pushImage(0, 0, 32, 32, tomato_img); 
 
+  // create large tomato sprite 
   tmtlrg.createSprite(126,126);
   tmtlrg.setSwapBytes(false);
   tmtlrg.pushImage(0, 0, 126, 126, tomato_Large_img);
 
+  // create stopwatch sprite 
   stpwtch.createSprite(64,64);
   stpwtch.setSwapBytes(true);
   stpwtch.pushImage(0, 0, 64, 64, stopwatch_img);
 
+  // redeclare starting seconds variable for 25 minute countown
+  seconds = 25 * 60; 
+
+  // Begin Timers 
+  Timer_INIT();
+
+  // work period countdown timer loop 
   while (seconds >= 0) {
 
+    // draw bacground rectangle and two spheres 
     spr.fillRect(0, 0, WIDTH, HEIGHT, color1);
     spr.fillCircle(350, 135, 215, color5);
     spr.fillCircle(0, 20, 72, color2);
     
+    // create the work period lable string/sprite
     spr.setTextColor(color3);
     String wrktxt = "...Work Period...";
     spr.drawString(wrktxt, 200, 25, 4);
 
+    // create timer outline round rectangles 
     spr.fillRoundRect(85, 85, 310, 135, 25, color3);
     spr.fillRoundRect(90, 90, 300, 125, 18, color2);
+    // convert second and minute values 
     int s = seconds % 60;
     int m = (seconds % 3600) / 60;
     int s_size = std::to_string(s).length();
 
+    // create timer number string for minutes 
     String m_str = String(m);
+    // if statment to keep alignment if single digit minutes 
     if (m_str.length() == 1) {
       m_str = "0" + m_str; 
     }
-
+    // create timer number string for seconds 
     String s_str = String(s); 
+    // if statment to keep alignment if single digits seconds 
     if (s_str.length() == 1) {
       s_str = "0" + s_str;
     }
-
+    // create total time string 
     String currTime = m_str + ":" + s_str; 
     spr.setTextColor(color3, color2);
     spr.drawString(currTime, 115, 110, 8);
 
+    // push tomato sprite left of "Work Period" to the sprite class &spr 
     tmtsml.pushToSprite(&spr, 165, img_pos2, TFT_BLACK);
 
+    // push tomato sprite right of "Work Period" to &spr
     tmtsml.pushToSprite(&spr, 382, img_pos3, TFT_BLACK);
 
+    // Push large tomato sprite to &spr
     tmtlrg.pushToSprite(&spr, 400, img_pos1, TFT_BLACK);
 
+    // Push stopwatch sprite to &spr 
     stpwtch.pushToSprite(&spr, 10, 120, TFT_BLACK);
 
-
+    // push the all drawn sprite to the screen
     amoled.pushColors(0, 0, WIDTH, HEIGHT, (uint16_t *)spr.getPointer());
   }
 
@@ -203,12 +226,40 @@ void drawTimerWork() {
 
 }
 
+///////////////////////// 5 MinuteBreak Timer Screen Function /////////////////////////
+
+void DrawTimer5Break() {
+
+// redefine starting seconds varibale for countdown 
+seconds = 5 * 60;
+
+// Begin Timers 
+Timer_INIT();
+
+// 5 Min Break Period countdown timer loop 
+while (seconds >= 0) {
+
+// Draw background 
+spr.fillRect(0, 0, WIDTH, HEIGHT, color6);
+
+
+}
+
+
+}
+
+
+
+
+
+
+
 ///////////////////////////////////////////////////////////////////////////////////////
 
 void loop() {
   // put your main code here, to run repeatedly:
-  Timer_INIT();
-  drawTimerWork();
+  //DrawTimerWork();
+  DrawTimer5Break();
 }
 
 // put function definitions here:
