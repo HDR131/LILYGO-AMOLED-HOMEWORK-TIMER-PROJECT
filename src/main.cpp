@@ -1,5 +1,6 @@
 #define LILYGO_TDISPLAY_AMOLED_SERIES
 
+#include "AceButton.h"
 #include "esp_arduino_version.h"
 #include <LilyGo_AMOLED.h> 
 #include <TFT_eSPI.h>
@@ -12,8 +13,6 @@
 #include "stopwatch_img.h"
 #include "break_img.h"
 #include "zzz_img.h"
-
-using namespace std;
 
 ////////////////////////////// TFT & amoled Initalizations //////////////////////////////
 TFT_eSPI tft = TFT_eSPI();
@@ -38,7 +37,11 @@ LilyGo_Class amoled;
 #define WIDTH amoled.height()
 #define HEIGHT amoled.width()
 
-////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////// Button Initalization ////////////////////////////////////
+
+using namespace ace_button;\
+const int BUTTON_PIN = 21; 
+AceButton button(BUTTON_PIN); 
 
 ////////////////////////////// Timer Initalization /////////////////////////////////////
 hw_timer_t *Timer0 = NULL; 
@@ -112,6 +115,7 @@ void IRAM_ATTR timer1Interrupt() {
   }
   portEXIT_CRITICAL_ISR(&timerMux1);
 }
+
 
 ////////////////////////// Begin Both Timers Init Function //////////////////////////
 void Timer_INIT() {
@@ -336,7 +340,7 @@ void DrawTimer15Break() {
 
   // 5 Min Break Period countdown timer loop 
   while (seconds >= 0) {
-
+    
     // Draw background 
     spr.fillRect(0, 0, WIDTH, HEIGHT, color6);
     spr.fillCircle(20, 100, 95, color7);
@@ -392,7 +396,10 @@ void DrawTimer15Break() {
   timerAlarmDisable(Timer0);
 }
 
-////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////// Button Event //////////////////////////////////////////////
+
+
+///////////////////////////////////////////////////////////////////////////////////////
 
 void setup() {
   Serial.begin(115200);
@@ -403,7 +410,6 @@ void setup() {
   unsigned int seed = analogReadMilliVolts(PIN_D0); // get a random seed 
   srand(seed); // set random seed 
   Timer_INIT(); // prepare timers 
-
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
